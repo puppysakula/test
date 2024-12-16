@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Commit History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #commit-list {
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+        }
+        #commit-list li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>GitHub Commit History</h1>
+    <p>以下はリポジトリ <code>puppysakula/test</code> の <code>main</code> ブランチのコミット履歴です。</p>
+    <ul id="commit-list"></ul>
+
+    <script>
+        // 固定されたリポジトリ情報
+        const owner = 'puppysakula'; // リポジトリのオーナー
+        const repo = 'test'; // リポジトリ名
+        const branch = 'main'; // 対象ブランチ
+
+        // GitHub APIのURL
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}`;
+
+        // コミット履歴を取得して表示する関数
+        async function fetchCommitHistory() {
+            const commitList = document.getElementById('commit-list');
+
+            try {
+                // API呼び出し
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`GitHub APIエラー: ${response.status} ${response.statusText}`);
+                }
+
+                // レスポンスをJSON形式でパース
+                const commits = await response.json();
+
+                // コミット履歴をリストに追加
+                commits.forEach(commit => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <strong>${commit.commit.message}</strong><br>
+                        <span>Author: ${commit.commit.author.name}</span><br>
+                        <span>Date: ${new Date(commit.commit.author.date).toLocaleString()}</span>
+                    `;
+                    commitList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('エラーが発生しました:', error.message);
+                const errorItem = document.createElement('li');
+                errorItem.textContent = `エラーが発生しました: ${error.message}`;
+                commitList.appendChild(errorItem);
+            }
+        }
+
+        // ページ読み込み時に実行
+        document.addEventListener('DOMContentLoaded', fetchCommitHistory);
+    </script>
+</body>
+</html>
